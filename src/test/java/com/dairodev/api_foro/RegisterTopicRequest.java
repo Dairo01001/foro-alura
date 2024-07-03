@@ -1,23 +1,18 @@
 package com.dairodev.api_foro;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
-public class TopicResponse {
-    private UUID id;
+public class RegisterTopicRequest {
     private String title;
     private String message;
     private LocalDate createdAt;
     private Boolean status;
 
-    TopicResponse() {}
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
+    public RegisterTopicRequest(String title, String message, LocalDate createdAt, Boolean status) {
+        this.title = title;
+        this.message = message;
+        this.createdAt = createdAt;
+        this.status = status;
     }
 
     public String getTitle() {
