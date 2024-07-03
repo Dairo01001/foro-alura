@@ -1,6 +1,8 @@
 package com.dairodev.api_foro;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -87,11 +89,14 @@ public class TopicTests {
         assertThat(newTopic.getStatus()).isEqualTo(topicRequest.getStatus());
     }
 
-    @Test
-    public void givenIhaveCreatedATopic_WhenIRequestTheTopic_ThenTheTopicIsReturned() {
+    @ParameterizedTest
+    @ValueSource(strings = {"Test Title", "Another Test Title"})
+    public void givenIHaveCreatedATopic_WhenIRequestTheTopic_ThenTheTopicIsReturned(
+            String topicTitle
+    ) {
         RegisterTopicRequest topicRequest = new RegisterTopicRequest(
-                "Topic Title",
-                "Topic Message",
+                topicTitle,
+                topicTitle,
                 LocalDate.now(),
                 true
         );
@@ -107,11 +112,23 @@ public class TopicTests {
                 .exchange();
 
         itShouldFindTheNewTopic(response);
+        isShouldConfirmTheNewTopicDetails(topicRequest, response);
     }
 
     private void itShouldFindTheNewTopic(ResponseSpec response) {
         response
                 .expectStatus()
                 .isOk();
+    }
+
+    private void isShouldConfirmTheNewTopicDetails(RegisterTopicRequest topicRequest, ResponseSpec response) {
+        response
+                .expectBody(TopicResponse.class)
+                .value(topic -> {
+                    assertThat(topic.getTitle()).isEqualTo(topicRequest.getTitle());
+                    assertThat(topic.getMessage()).isEqualTo(topicRequest.getMessage());
+                    assertThat(topic.getCreatedAt()).isEqualTo(topicRequest.getCreatedAt());
+                    assertThat(topic.getStatus()).isEqualTo(topicRequest.getStatus());
+                });
     }
 }

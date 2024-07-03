@@ -1,10 +1,17 @@
-package com.dairodev.api_foro.Topic.domain;
+package com.dairodev.api_foro.Topic;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Entity(name = "Topic")
+@Table(name = "topics")
 public class Topic {
-    private UUID id;
+    private @Id UUID id;
     private String title;
     private String message;
     private LocalDate createdAt;
