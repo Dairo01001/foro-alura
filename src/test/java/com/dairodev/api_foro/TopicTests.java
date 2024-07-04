@@ -2,10 +2,10 @@ package com.dairodev.api_foro;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Value;
+import org.junit.jupiter.params.aggregator.AggregateWith;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
 import java.net.URI;
@@ -18,29 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TopicTests {
 
-    @Value("${local.server.port}")
-    private int port;
-
-    private static final String TOPIC_PATH = "/topics";
-
-    private String baseUri() {
-        return "http://localhost:" + port;
-    }
-
-    private WebTestClient newWebClient() {
-        return WebTestClient
-                .bindToServer()
-                .baseUrl(baseUri())
-                .build();
-    }
-
-    private ResponseSpec registerTopic(RegisterTopicRequest topicRequest) {
-        return newWebClient()
-                .post()
-                .uri(TOPIC_PATH)
-                .bodyValue(topicRequest)
-                .exchange();
-    }
+    @Autowired
+    private TopicApi topicApi;
 
     @Test
     public void givenIAmOnTheTopic_WhenIRegisterATopic_ThenTheTopicIsCreated() {
@@ -51,10 +30,11 @@ public class TopicTests {
                 true
         );
 
-        var response = registerTopic(topicRequest);
+        var response = topicApi.registerTopic(topicRequest);
 
         itShouldCreateANewTopic(response);
-        TopicResponse newTopic = itShouldAllocateANewIdToTheTopic(response);
+        TopicResponse newTopic = topicApi.getTopicFromResponse(response);
+        itShouldAllocateANewId(newTopic);
         itShouldShowWhereToLocateNewTopic(response, newTopic);
         itShouldConfirmTopicDetails(topicRequest, newTopic);
     }
@@ -65,21 +45,15 @@ public class TopicTests {
                 .isCreated();
     }
 
-    private TopicResponse itShouldAllocateANewIdToTheTopic(ResponseSpec response) {
-        return response
-                .expectBody(TopicResponse.class)
-                .value(topic -> {
-                    assertThat(topic.getId()).isNotEqualTo(new UUID(0, 0));
-                    assertThat(topic.getId()).isNotNull();
-                })
-                .returnResult()
-                .getResponseBody();
+    private void itShouldAllocateANewId(TopicResponse newTopic) {
+        assertThat(newTopic.getId()).isNotEqualTo(new UUID(0, 0));
+        assertThat(newTopic.getId()).isNotNull();
     }
 
     private void itShouldShowWhereToLocateNewTopic(ResponseSpec response, TopicResponse newTopic) {
         response
                 .expectHeader()
-                .location((baseUri() + TOPIC_PATH + "/" + newTopic.getId()));
+                .location(topicApi.uriForTopicsId(newTopic.getId()).toString());
     }
 
     private void itShouldConfirmTopicDetails(RegisterTopicRequest topicRequest, TopicResponse newTopic) {
@@ -90,29 +64,20 @@ public class TopicTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Test Title", "Another Test Title"})
+    @CsvSource({"Test Title,Test Message,2020-01-01,true", "Another Test Title,Another Test Message,2020-02-02,false"})
     public void givenIHaveCreatedATopic_WhenIRequestTheTopic_ThenTheTopicIsReturned(
-            String topicTitle
+            @AggregateWith(TopicAggregator.class) RegisterTopicRequest topicRequest
     ) {
-        RegisterTopicRequest topicRequest = new RegisterTopicRequest(
-                topicTitle,
-                topicTitle,
-                LocalDate.now(),
-                true
-        );
-
-        URI newTopicLocation = registerTopic(topicRequest)
+        URI newTopicLocation = topicApi.registerTopic(topicRequest)
                 .expectBody(TopicResponse.class)
                 .returnResult()
                 .getResponseHeaders().getLocation();
 
-        ResponseSpec response = newWebClient()
-                .get()
-                .uri(newTopicLocation)
-                .exchange();
+        ResponseSpec response = topicApi.getTopic(newTopicLocation);
 
         itShouldFindTheNewTopic(response);
-        isShouldConfirmTheNewTopicDetails(topicRequest, response);
+        TopicResponse topic = topicApi.getTopicFromResponse(response);
+        isShouldConfirmTheNewTopicDetails(topicRequest, topic);
     }
 
     private void itShouldFindTheNewTopic(ResponseSpec response) {
@@ -121,14 +86,10 @@ public class TopicTests {
                 .isOk();
     }
 
-    private void isShouldConfirmTheNewTopicDetails(RegisterTopicRequest topicRequest, ResponseSpec response) {
-        response
-                .expectBody(TopicResponse.class)
-                .value(topic -> {
-                    assertThat(topic.getTitle()).isEqualTo(topicRequest.getTitle());
-                    assertThat(topic.getMessage()).isEqualTo(topicRequest.getMessage());
-                    assertThat(topic.getCreatedAt()).isEqualTo(topicRequest.getCreatedAt());
-                    assertThat(topic.getStatus()).isEqualTo(topicRequest.getStatus());
-                });
+    private void isShouldConfirmTheNewTopicDetails(RegisterTopicRequest topicRequest, TopicResponse topic) {
+        assertThat(topic.getTitle()).isEqualTo(topicRequest.getTitle());
+        assertThat(topic.getMessage()).isEqualTo(topicRequest.getMessage());
+        assertThat(topic.getCreatedAt()).isEqualTo(topicRequest.getCreatedAt());
+        assertThat(topic.getStatus()).isEqualTo(topicRequest.getStatus());
     }
 }

@@ -3,6 +3,7 @@ package com.dairodev.api_foro.Topic;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -12,33 +13,37 @@ import java.util.UUID;
 @RequestMapping("/topics")
 public class TopicController {
 
-    private final TopicRepository topicRepository;
+    private final TopicService topicService;
 
-    public TopicController(TopicRepository topicRepository) {
+    public TopicController(TopicService topicService) {
         super();
-        this.topicRepository = topicRepository;
+        this.topicService = topicService;
     }
+
 
     @PostMapping
     ResponseEntity<Topic> createTopic(
-            @RequestBody @Valid RegisterTopicRequest registerTopicRequest,
-            UriComponentsBuilder uriBuilder
+            @RequestBody @Valid RegisterTopicRequest registerTopicRequest
     ) {
         Topic newTopic = Topic.register(registerTopicRequest);
 
-        topicRepository.save(newTopic);
+        topicService.saveTopic(newTopic);
 
-        URI newTopicLocation = uriBuilder
-                .path("/topics/{id}")
-                .buildAndExpand(newTopic.getId())
-                .toUri();
-
+        URI newTopicLocation = topicUri(newTopic.getId());
         return ResponseEntity.created(newTopicLocation).body(newTopic);
+    }
+
+    private URI topicUri(UUID id) {
+        return ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
     }
 
     @GetMapping("/{id}")
     Topic getTopic(@PathVariable UUID id) {
-        Topic topic = topicRepository.findById(id).orElseThrow();
+        Topic topic = topicService.getTopicByID(id);
         return topic;
     }
 }
