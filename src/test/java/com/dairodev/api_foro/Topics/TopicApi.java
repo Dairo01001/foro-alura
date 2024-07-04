@@ -1,11 +1,13 @@
-package com.dairodev.api_foro;
+package com.dairodev.api_foro.Topics;
 
+import com.dairodev.api_foro.Helpers;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @Lazy
@@ -39,6 +41,24 @@ public class TopicApi {
     public TopicResponse getTopicFromResponse(ResponseSpec response) {
         return response
                 .expectBody(TopicResponse.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    public ResponseSpec getTopic(UUID id) {
+        return getTopic(uriForTopicsId(id));
+    }
+
+    public ResponseSpec getTopics() {
+        return Helpers.newWebClient(port)
+                .get()
+                .uri(TOPICS_PATH)
+                .exchange();
+    }
+
+    public List<TopicResponse> getTopicsFromResponse(ResponseSpec response) {
+        return response
+                .expectBodyList(TopicResponse.class)
                 .returnResult()
                 .getResponseBody();
     }

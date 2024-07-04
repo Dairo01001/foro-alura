@@ -1,4 +1,4 @@
-package com.dairodev.api_foro;
+package com.dairodev.api_foro.Topics;
 
 import java.time.LocalDate;
 

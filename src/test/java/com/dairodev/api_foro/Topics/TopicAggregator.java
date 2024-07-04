@@ -1,4 +1,4 @@
-package com.dairodev.api_foro;
+package com.dairodev.api_foro.Topics;
 
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.params.aggregator.ArgumentsAccessor;

@@ -1,4 +1,4 @@
-package com.dairodev.api_foro;
+package com.dairodev.api_foro.Topics;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,6 +10,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,7 +67,7 @@ public class TopicTests {
     @ParameterizedTest
     @CsvSource({"Test Title,Test Message,2020-01-01,true", "Another Test Title,Another Test Message,2020-02-02,false"})
     public void givenIHaveCreatedATopic_WhenIRequestTheTopic_ThenTheTopicIsReturned(
-            @AggregateWith(TopicAggregator.class) RegisterTopicRequest topicRequest
+            @AggregateWith(TopicAggregator.class) com.dairodev.api_foro.Topics.RegisterTopicRequest topicRequest
     ) {
         URI newTopicLocation = topicApi.registerTopic(topicRequest)
                 .expectBody(TopicResponse.class)
@@ -91,5 +92,49 @@ public class TopicTests {
         assertThat(topic.getMessage()).isEqualTo(topicRequest.getMessage());
         assertThat(topic.getCreatedAt()).isEqualTo(topicRequest.getCreatedAt());
         assertThat(topic.getStatus()).isEqualTo(topicRequest.getStatus());
+    }
+
+    @Test
+    public void givenIHaveTheWrongId_WhenICheckTheTopic_ThenTheTopicIsNotFound() {
+        UUID wrongId = UUID.randomUUID();
+        ResponseSpec response = topicApi.getTopic(wrongId);
+
+        itShouldNotFindTheTopic(response);
+    }
+
+    private void itShouldNotFindTheTopic(ResponseSpec response) {
+        response.expectStatus().isNotFound();
+    }
+
+    @Test
+    public void givenIHaveTopics_WhenICheckTheTopics_ThenTheTopicsAreReturned() {
+        RegisterTopicRequest topicRequest = new RegisterTopicRequest(
+                "Topic List Title",
+                "Topic List Message",
+                LocalDate.now(),
+                true
+        );
+        var response = topicApi.registerTopic(topicRequest);
+        TopicResponse newTopic = topicApi.getTopicFromResponse(response);
+
+        ResponseSpec topicsResponse = topicApi.getTopics();
+        List<TopicResponse> topics = topicApi.getTopicsFromResponse(topicsResponse);
+        itShouldFindTheTopics(topicsResponse);
+        itShouldTopicsAreReturned(topics, newTopic);
+    }
+
+    private void itShouldTopicsAreReturned(List<TopicResponse> topics, TopicResponse newTopic) {
+        assertThat(topics.size()).isEqualTo(1);
+        TopicResponse topic = topics.get(0);
+        assertThat(topic.getTitle()).isEqualTo(newTopic.getTitle());
+        assertThat(topic.getMessage()).isEqualTo(newTopic.getMessage());
+        assertThat(topic.getCreatedAt()).isEqualTo(newTopic.getCreatedAt());
+        assertThat(topic.getStatus()).isEqualTo(newTopic.getStatus());
+    }
+
+    private void itShouldFindTheTopics(ResponseSpec response) {
+        response
+                .expectStatus()
+                .isOk();
     }
 }

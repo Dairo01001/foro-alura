@@ -1,6 +1,7 @@
-package com.dairodev.api_foro.Topic;
+package com.dairodev.api_foro.Topic.model;
 
-import jakarta.persistence.Column;
+import com.dairodev.api_foro.Topic.dto.RegisterTopicRequest;
+import com.dairodev.api_foro.Topic.dto.UpdateTopicRequest;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -41,6 +42,12 @@ public class Topic {
                 registerTopicRequest.createdAt(),
                 registerTopicRequest.status()
         );
+    }
+
+    public void update(UpdateTopicRequest updateTopicRequest) {
+        if (updateTopicRequest.title() != null)  setTitle(updateTopicRequest.title());
+        if (updateTopicRequest.message() != null)  setMessage(updateTopicRequest.message());
+        if (updateTopicRequest.status() != null)  setStatus(updateTopicRequest.status());
     }
 
     public UUID getId() {

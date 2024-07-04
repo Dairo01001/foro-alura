@@ -1,4 +1,4 @@
-package com.dairodev.api_foro.Topic;
+package com.dairodev.api_foro.Topic.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
