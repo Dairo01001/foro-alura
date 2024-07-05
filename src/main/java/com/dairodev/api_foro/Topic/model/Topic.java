@@ -1,12 +1,14 @@
 package com.dairodev.api_foro.Topic.model;
 
+import com.dairodev.api_foro.Answer.Answer;
+import com.dairodev.api_foro.Course.Course;
 import com.dairodev.api_foro.Topic.dto.RegisterTopicRequest;
 import com.dairodev.api_foro.Topic.dto.UpdateTopicRequest;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.dairodev.api_foro.User.User;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "Topic")
@@ -17,6 +19,17 @@ public class Topic {
     private String message;
     private LocalDate createdAt;
     private Boolean status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    @OneToMany(mappedBy = "topic")
+    private List<Answer> answers;
 
     public Topic() {
     }
@@ -88,5 +101,21 @@ public class Topic {
 
     public void setStatus(Boolean status) {
         this.status = status;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public List<Answer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<Answer> answers) {
+        this.answers = answers;
     }
 }
