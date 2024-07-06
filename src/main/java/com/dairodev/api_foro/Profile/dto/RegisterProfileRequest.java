@@ -1,4 +1,4 @@
-package com.dairodev.api_foro.Profile;
+package com.dairodev.api_foro.Profile.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

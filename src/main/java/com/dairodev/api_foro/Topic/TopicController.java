@@ -1,10 +1,14 @@
 package com.dairodev.api_foro.Topic;
 
+import com.dairodev.api_foro.Course.model.Course;
+import com.dairodev.api_foro.Course.model.CourseService;
 import com.dairodev.api_foro.Topic.dto.RegisterTopicRequest;
 import com.dairodev.api_foro.Topic.dto.UpdateTopicRequest;
 import com.dairodev.api_foro.Topic.model.Topic;
+import com.dairodev.api_foro.Topic.model.TopicService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.PageRequest;
@@ -17,15 +21,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/topics")
+@RequiredArgsConstructor
 public class TopicController {
 
-    private final TopicServiceImp topicService;
-
-    public TopicController(TopicServiceImp topicService) {
-        super();
-        this.topicService = topicService;
-    }
-
+    private final TopicService topicService;
 
     @PostMapping
     @Transactional
@@ -64,6 +63,6 @@ public class TopicController {
             @PathVariable UUID id,
             @RequestBody @Valid UpdateTopicRequest updateTopicRequest
     ) {
-        return  ResponseEntity.ok(topicService.updateTopic(id, updateTopicRequest));
+        return ResponseEntity.ok(topicService.updateTopic(id, updateTopicRequest));
     }
 }

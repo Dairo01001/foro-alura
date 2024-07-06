@@ -1,5 +1,8 @@
 package com.dairodev.api_foro.Profile;
 
+import com.dairodev.api_foro.Profile.dto.RegisterProfileRequest;
+import com.dairodev.api_foro.Profile.model.Profile;
+import com.dairodev.api_foro.Profile.model.ProfileService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -34,9 +38,15 @@ public class ProfileController {
         return ResponseEntity.created(newTopicLocation).body(newProfile);
     }
 
+
     @GetMapping("/{id}")
     ResponseEntity<Profile> getProfile(@PathVariable UUID id) {
         Profile profile = profileService.getProfileByID(id);
         return ResponseEntity.ok(profile);
+    }
+
+    @GetMapping
+    ResponseEntity<List<Profile>> getProfiles() {
+        return ResponseEntity.ok(profileService.getProfiles());
     }
 }

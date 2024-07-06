@@ -1,4 +1,4 @@
-package com.dairodev.api_foro.Profile;
+package com.dairodev.api_foro.Profile.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
