@@ -1,8 +1,7 @@
 package com.dairodev.api_foro.Topic;
 
-import com.dairodev.api_foro.Course.model.Course;
-import com.dairodev.api_foro.Course.model.CourseService;
 import com.dairodev.api_foro.Topic.dto.RegisterTopicRequest;
+import com.dairodev.api_foro.Topic.dto.TopicResponse;
 import com.dairodev.api_foro.Topic.dto.UpdateTopicRequest;
 import com.dairodev.api_foro.Topic.model.Topic;
 import com.dairodev.api_foro.Topic.model.TopicService;
@@ -28,41 +27,51 @@ public class TopicController {
 
     @PostMapping
     @Transactional
-    ResponseEntity<Topic> createTopic(
+    ResponseEntity<TopicResponse> createTopic(
             @RequestBody @Valid RegisterTopicRequest registerTopicRequest,
             UriComponentsBuilder uriComponentsBuilder
     ) {
-        Topic newTopic = Topic.register(registerTopicRequest);
+        Topic newTopic = topicService.saveTopic(registerTopicRequest);
 
-        topicService.saveTopic(newTopic);
         URI newTopicLocation = uriComponentsBuilder
                 .path("/topics/{id}")
                 .buildAndExpand(newTopic.getId())
                 .toUri();
 
-        return ResponseEntity.created(newTopicLocation).body(newTopic);
+        return ResponseEntity.created(newTopicLocation).body(TopicResponse.fromTopic(newTopic));
     }
 
     @GetMapping
-    ResponseEntity<Page<Topic>> getTopics(
+    ResponseEntity<Page<TopicResponse>> getTopics(
             @RequestParam(name = "page", defaultValue = "0") Integer page,
             @RequestParam(name = "size", defaultValue = "10") Integer size
     ) {
-        return ResponseEntity.ok(topicService.getTopics(PageRequest.of(page, size)));
+        return ResponseEntity.ok(
+                topicService
+                        .getTopics(PageRequest.of(page, size))
+                        .map(TopicResponse::fromTopic)
+        );
     }
 
     @GetMapping("/{id}")
-    ResponseEntity<Topic> getTopic(@PathVariable UUID id) {
+    ResponseEntity<TopicResponse> getTopic(@PathVariable UUID id) {
         Topic topic = topicService.getTopicByID(id);
-        return ResponseEntity.ok(topic);
+        return ResponseEntity.ok(TopicResponse.fromTopic(topic));
     }
 
     @PutMapping("/{id}")
     @Transactional
-    ResponseEntity<Topic> updateTopic(
+    ResponseEntity<TopicResponse> updateTopic(
             @PathVariable UUID id,
             @RequestBody @Valid UpdateTopicRequest updateTopicRequest
     ) {
-        return ResponseEntity.ok(topicService.updateTopic(id, updateTopicRequest));
+        return ResponseEntity.ok(TopicResponse.fromTopic(topicService.updateTopic(id, updateTopicRequest)));
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    ResponseEntity<Void> deleteTopic(@PathVariable UUID id) {
+        topicService.deleteTopic(id);
+        return ResponseEntity.noContent().build();
     }
 }

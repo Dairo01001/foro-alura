@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,7 +40,6 @@ public class UserServiceImp implements UserService {
                 .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-
         return new UserResponse(
                 user.getName(),
                 user.getEmail(),
@@ -48,5 +48,12 @@ public class UserServiceImp implements UserService {
                         .map(Profile::getName)
                         .toList()
         );
+    }
+
+    @Override
+    public User getReferenceByID(UUID uuid) {
+        return userRepository
+                .findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 }

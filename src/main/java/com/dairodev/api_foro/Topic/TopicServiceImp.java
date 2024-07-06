@@ -1,9 +1,15 @@
 package com.dairodev.api_foro.Topic;
 
+import com.dairodev.api_foro.Course.model.Course;
+import com.dairodev.api_foro.Course.model.CourseService;
+import com.dairodev.api_foro.Topic.dto.RegisterTopicRequest;
 import com.dairodev.api_foro.Topic.dto.UpdateTopicRequest;
 import com.dairodev.api_foro.Topic.model.Topic;
 import com.dairodev.api_foro.Topic.model.TopicRepository;
 import com.dairodev.api_foro.Topic.model.TopicService;
+import com.dairodev.api_foro.User.User;
+import com.dairodev.api_foro.User.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -14,13 +20,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class TopicServiceImp implements TopicService {
     private final TopicRepository topicRepository;
+    private final UserService userService;
+    private final CourseService courseService;
 
-    public TopicServiceImp(TopicRepository topicRepository) {
-        super();
-        this.topicRepository = topicRepository;
-    }
 
     @Override
     public Topic getTopicByID(UUID id) {
@@ -35,10 +40,21 @@ public class TopicServiceImp implements TopicService {
     }
 
     @Override
-    public  Topic saveTopic(Topic topic) {
-        if (topicExists(topic.getTitle(), topic.getMessage())) {
+    public Topic saveTopic(Topic topic) {
+        return null;
+    }
+
+    @Override
+    public  Topic saveTopic(RegisterTopicRequest registerTopicRequest) {
+        if (topicExists(registerTopicRequest.title(), registerTopicRequest.message())) {
             throw new ResponseStatusException((HttpStatus.CONFLICT), "Topic already exists");
         }
+
+        User user = userService.getReferenceByID(registerTopicRequest.authorId());
+        Course course = courseService.getCourseByID(registerTopicRequest.courseId());
+
+        Topic topic = Topic.register(registerTopicRequest.title(), registerTopicRequest.message(), course, user);
+
         topicRepository.save(topic);
         return topic;
     }
@@ -64,5 +80,10 @@ public class TopicServiceImp implements TopicService {
 
         topicRepository.save(topic);
         return topic;
+    }
+
+    @Override
+    public void deleteTopic(UUID id) {
+        topicRepository.deleteById(id);
     }
 }

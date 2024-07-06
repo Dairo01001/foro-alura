@@ -9,4 +9,6 @@ public interface UserService {
     User saveUser(User user, Set<Profile> profiles);
 
     UserResponse getUserByID(UUID id);
+
+    User getReferenceByID(UUID uuid);
 }

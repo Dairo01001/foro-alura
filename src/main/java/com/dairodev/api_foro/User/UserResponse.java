@@ -7,4 +7,11 @@ public record UserResponse(
         String email,
         List<String> profiles
 ) {
+    public static UserResponse fromUser(User author) {
+        return new UserResponse(
+                author.getName(),
+                author.getEmail(),
+                List.of()
+        );
+    }
 }
