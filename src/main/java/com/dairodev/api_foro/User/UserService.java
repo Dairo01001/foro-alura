@@ -1,5 +1,6 @@
 package com.dairodev.api_foro.User;
 
+import com.dairodev.api_foro.Auth.AppUser;
 import com.dairodev.api_foro.Profile.model.Profile;
 
 import java.util.Set;
@@ -11,4 +12,6 @@ public interface UserService {
     UserResponse getUserByID(UUID id);
 
     User getReferenceByID(UUID uuid);
+
+    AppUser getUserByEmail(String email);
 }
